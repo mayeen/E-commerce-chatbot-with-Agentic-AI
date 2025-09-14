@@ -97,9 +97,12 @@ graph = workflow.compile()
 def run_agent(user_text: str) -> dict:
     init = State(messages=[HumanMessage(content=user_text)])
     out = graph.invoke(init)
-    last_ai = [m for m in out.messages if isinstance(m, AIMessage)][-1]
+    messages = out["messages"] if isinstance(out, dict) else out.messages
+    last_ai = [m for m in messages if isinstance(m, AIMessage)][-1]
+    intent = out["intent"] if isinstance(out, dict) else out.intent
+    tool_result = out.get("last_tool_result") if isinstance(out, dict) else out.last_tool_result
     return {
-        "intent": out.intent,
-        "tool_result": out.last_tool_result,
+        "intent": intent,
+        "tool_result": tool_result,
         "answer": last_ai.content,
     }
